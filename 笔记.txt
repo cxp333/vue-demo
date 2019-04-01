@@ -1,0 +1,122 @@
+路由守卫:
+
+	全局守卫/路由独享的守卫/组件内的守卫
+
+	beforeRouteEnter(to,from,next){}	前置守卫,进入
+		to 目标路由
+		from 当前路由
+		next 是个函数  next() == next(true)  运行跳转
+					   next(false) 不让跳转
+					   next('字符路径')/next({对象路径}) 重定向
+
+	beforeRouteLeave(to,from,next){}  后置守卫,离开
+数据预载
+	beforeRouteEnter(to,from,next){
+		1. 数据附加到目标路由上  to.query.xxx=数据
+		2. next( _this => _this.属性="拿到的数据")
+	}
+
+自定插件
+	Vue.use(插件)    Vue会传递给install函数
+	插件 == 函数|对象
+	对象:要求内部有一个install方法
+	install内部注册全局组件  Vue.component('xxx',xxx), 对象其他的key 上完成公共方法，组件内部（$ref,$parent,$children,slot)
+
+状态管理(vuex)
+	
+	状态管理  store
+		什么时候用： 打算开发中大型应用
+		集中式数据管理, 一处修改，多处使用
+
+	思维:
+											store
+					this.$store.commit('increment')	-> mutations
+					this.$store.dispatch('jia')		-> actions
+				     mapActions() ->actions							mapGetters()->getters
+				学生			代课老师			校长		 	 财务      版主任			学生
+			components - >  actions		->  mutations -> state  <- getters	<-	components
+				发送请求      处理			修改状态
+							  业务逻辑		修改state			   读取state
+							  异步
+							  							state<-$store.state <-  学生
+	-----------------------------------------------------------------------------
+	配置：
+		安装 vuex 状态管理插件
+		引入 + use + 注册到根
+
+	------------------------------------------------------------------------------
+	mapActions/mapGetters  执行后， 返回来的是对象
+		对象:	{incremen:fn,decrement:fn,xx,xx}
+	------------------------------------------------------------------------------
+	this.$store.commit('类型',参数/负载/payload) -> mutations
+	this.$store.dispatch('类型',参数/负载/payload)  -> actions
+	this.$store.dispatch/commit({type:类型,payload:负载})
+	const actions = {
+		类型:({store对象,commit},负载)=>{}
+	}
+
+	<xx @click="请求类型(负载)" 
+
+	------------------------------------------------------------------------------
+
+
+c) html+css模板 移植 到 组件
+			01 全局资源 在主入口文件(index.html)引入
+			02 全局资源 主程序(main.js|app.vue) | providerPlugin webpack插件
+			03 自执行脚本，跟着要控制的元素走    *
+			04 私有资源，进入组件内部
+			05 开发环境资源引入动作，取决于资源的输出方式，和业务自身的要求(如何暴露)
+
+
+			插件推荐 
+				vue-scroller:上拉下拉
+				vue-lazyload：懒加载
+				vue-awesome-swiper：轮播图
+				.....
+
+			vue-swipe:
+				npm i vue-swipe -D  安装
+				import './node_modules/vue-swipe/dist/vue-swipe.css'; 引入样式
+				import { Swipe, SwipeItem } from 'vue-swipe'; 引入组件
+
+				Vue.component('swipe', Swipe);    注册安装
+				Vue.component('swipe-item', SwipeItem);
+
+				注册到选项components 私有使用
+
+	4. 路由搭建
+
+		css 冲突:
+			style-loader 插入所有组件css 到 style标签，选择器重名
+		解决：
+			1)	css命名空间   √
+				.app-home{}   .app-product{}  √
+			2)	css模块化
+				cli2
+					webpack 配置:
+						utils->css-loader->options{modules:true}
+					
+					组件引入样式1: 
+						应用样式:  <div :class='$style.类名|id名'
+
+					组件引入样式2: 写在style内部
+						应用样式:  <div :class='$style.类名|id名'
+
+				cli3
+					<style  module>  使用: <xx :class={$style.box}
+				    	注意: 对css内部@import() css时无效时
+			3)	scoped 独立样式作用域
+				style 标签 计入scoped属性
+					注意: 对css内部@import() css时无效时
+
+	5. 数据交互： 
+
+		没有接口:
+			mock假数据 json
+			假接口: nodeApi
+
+		home(axios)->porps(list,dataName)->list         -> 路由传递参数和数据-> detail(参数->axios)
+		follow(axios)->porps(list,dataName)->list
+
+		全局过滤器:	Vue.filter('name',varname)
+		全局组件（loading）
